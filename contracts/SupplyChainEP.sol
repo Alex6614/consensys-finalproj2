@@ -176,6 +176,7 @@ contract SupplyChainEP {
         bool[] memory isWarning = new bool[](r.length);
         address[] memory notifiers = new address[](r.length);
         uint payment = 0;
+        
         for(uint i = 0; i < r.length; i++) {
             isWarning[i] = r[i].directRequest;
             notifiers[i] = r[i].requester;
@@ -189,18 +190,23 @@ contract SupplyChainEP {
     function seeRequests()
         view
         public
-        returns (bool[], address[], uint)
+        returns (bool[], address[], uint, string)
     {
         Request[] storage r = requests[msg.sender];
         bool[] memory isWarning = new bool[](r.length);
         address[] memory notifiers = new address[](r.length);
         uint payment = 0;
+
+        string ipfs_hash;
+
         for(uint i = 0; i < r.length; i++) {
             isWarning[i] = r[i].directRequest;
             notifiers[i] = r[i].requester;
             payment = payment + r[i].reward;
+            ipfs_hash = ipfs_hash.toSlice().concat(r.ipfsHash.toSlice());
+            ipfs_hash = ipfs_hash.toSlice().concat(",".toSlice());
         }
-        return (isWarning, notifiers, payment);
+        return (isWarning, notifiers, payment, ipfs_hash);
     }
 
     // For Debugging
