@@ -1,0 +1,26 @@
+1. truffle unbox react
+2. Copy over contracts
+3. Copy over migrations
+4. Copy over tests
+5. truffle develop
+	a. compile
+	b. migrate
+	c. test
+
+
+How to begin coding:
+1) Go into "fin" directory
+2) Create your blockchain with ganache-cli. Be sure to copy blockchain password.
+3) Migrate your contracts with "truffle compile, truffle migrate".
+4) Set up your development server with npm start
+5) Go into metamask and go into the blockchain with the password.
+
+TODO:
+
+Need to verify that part name and subpart name are properly formatted	
+
+Clear form when input is submitted (right now state is empty)
+
+Did I need to do anything with truffle-config.js?
+
+Get Requests should also return IPFS!!!!
