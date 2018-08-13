@@ -19,8 +19,4 @@ TODO:
 
 Need to verify that part name and subpart name are properly formatted	
 
-Clear form when input is submitted (right now state is empty)
-
-Did I need to do anything with truffle-config.js?
-
-Get Requests should also return IPFS!!!!
+Put up some UI when something happens lol

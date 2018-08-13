@@ -170,21 +170,26 @@ contract SupplyChainEP {
     // This would eventually delete all the requests by the end of the transaction
     function getRequests()
         public
-        returns (bool[], address[], uint)
+        returns (bool[], address[], uint, string)
     {
         Request[] storage r = requests[msg.sender];
         bool[] memory isWarning = new bool[](r.length);
         address[] memory notifiers = new address[](r.length);
         uint payment = 0;
+
+        string memory ipfs_hash;
         
         for(uint i = 0; i < r.length; i++) {
             isWarning[i] = r[i].directRequest;
             notifiers[i] = r[i].requester;
             payment = payment + r[i].reward;
+            ipfs_hash = ipfs_hash.toSlice().concat(r[i].ipfsHash.toSlice());
+            ipfs_hash = ipfs_hash.toSlice().concat(",".toSlice());
         }
+        
         msg.sender.transfer(payment);
         delete requests[msg.sender];
-        return (isWarning, notifiers, payment);
+        return (isWarning, notifiers, payment, ipfs_hash);
     }
 
     function seeRequests()
@@ -197,13 +202,13 @@ contract SupplyChainEP {
         address[] memory notifiers = new address[](r.length);
         uint payment = 0;
 
-        string ipfs_hash;
+        string memory ipfs_hash;
 
         for(uint i = 0; i < r.length; i++) {
             isWarning[i] = r[i].directRequest;
             notifiers[i] = r[i].requester;
             payment = payment + r[i].reward;
-            ipfs_hash = ipfs_hash.toSlice().concat(r.ipfsHash.toSlice());
+            ipfs_hash = ipfs_hash.toSlice().concat(r[i].ipfsHash.toSlice());
             ipfs_hash = ipfs_hash.toSlice().concat(",".toSlice());
         }
         return (isWarning, notifiers, payment, ipfs_hash);

@@ -175,6 +175,7 @@ class App extends Component {
     const account = this.state.account
     alert('A part was submitted: ' + this.state.newPartString + ' with subparts: ' + this.state.newSubpartString + ' for account: ' + account);
     event.preventDefault();
+    document.getElementById('new-part-form').reset()
 
     contract.addResource(this.state.newPartString, this.state.newSubpartString, {from: account})
       .then(result => {
@@ -198,6 +199,7 @@ class App extends Component {
     const contract = this.state.contract
     const account = this.state.account
     event.preventDefault();
+    document.getElementById('new-notification-form').reset()
     contract.notify(this.state.newNotifyPart, this.state.newNotifyIPFS, {from: account, value: this.state.web3.toWei('1', 'ether')})
       .then(result => {
         this.setState({newNotifyPart: ""});
@@ -221,6 +223,7 @@ class App extends Component {
      + "\n for part: " + this.state.newWhitelistPart
      + "\n from user: " + account)
     event.preventDefault();
+    document.getElementById('new-whitelist-form').reset()
     contract.whitelistUser(this.state.newWhitelistPart, this.state.newWhitelistUser, true, {from: account})
       .then(result => {
         this.setState({newWhitelistPart: ""});
@@ -283,7 +286,7 @@ class App extends Component {
                   Send it 
                 </button>
               </form>
-              <form onSubmit={this.handleSubmit}>
+              <form id="new-part-form" onSubmit={this.handleSubmit}>
                 <label>
                   New Part Name:
                   <input type="text" value={this.state.value} onChange={this.handleChangePart} />
@@ -294,7 +297,7 @@ class App extends Component {
                 </label>
                 <input type="submit" value="Submit" />
               </form>
-              <form onSubmit={this.handleWhitelistSubmit}>
+              <form id="new-whitelist-form" onSubmit={this.handleWhitelistSubmit}>
                 <label>
                   Part Name for Whitelisting:
                   <input type="text" value={this.state.value} onChange={this.handleChangeWhitelistPart} />
@@ -305,7 +308,7 @@ class App extends Component {
                 </label>
                 <input type="submit" value="Submit" />
               </form>
-              <form onSubmit={this.handleNotifySubmit}>
+              <form id="new-notification-form" onSubmit={this.handleNotifySubmit}>
                 <label>
                   Notify for part name:
                   <input type="text" value={this.state.value} onChange={this.handleChangeNotifyPart} />
