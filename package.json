@@ -49,10 +49,15 @@
     "whatwg-fetch": "1.0.0"
   },
   "dependencies": {
+    "classnames": "^2.2.6",
     "dotenv": "^2.0.0",
     "ipfs-api": "^23.0.0",
+    "prop-types": "^15.6.2",
     "react": "^15.4.2",
-    "react-dom": "^15.4.2"
+    "react-alert": "^4.0.4",
+    "react-alert-template-basic": "^1.0.0",
+    "react-dom": "^15.6.2",
+    "react-transition-group": "^2.4.0"
   },
   "scripts": {
     "start": "node scripts/start.js",

@@ -24,6 +24,8 @@ import "./strings.sol";
 
 contract SupplyChainEP {
     using strings for *;
+
+    bool private stopped = false;
     
     /* set owner */
     address owner;
@@ -58,6 +60,7 @@ contract SupplyChainEP {
     event debugString(string debug);
     event debugString2(string debug);
     event debugInt(uint debug);
+    // event stopped();
 
     event gothere();
     event debugBool(bool boolean);
@@ -67,10 +70,15 @@ contract SupplyChainEP {
     modifier isSource (string part) {require (resourceInfo[part].source == msg.sender); _;}
     modifier isOwner () {require(msg.sender == owner); _;}
     modifier notEmpty (string _string) {bytes memory stringTest = bytes(_string); require (stringTest.length != 0); _;}
+    // modifier stopInEmergency {if (!stopped) _; }
 
     constructor() public {
         owner = msg.sender;
     }
+
+    // function toggleContractActive() isOwner public {
+    //     stopped = !stopped;
+    // }
 
     // When notifying people, you also send warnings to one level further down
     function notify(string parts, string _ipfsHash)

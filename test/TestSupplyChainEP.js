@@ -27,53 +27,53 @@ contract('SupplyChainEP', function(accounts) {
     
         })
     
-        // it("should be able to split subparts using the string library", async() => {
-        //     const scep = await SupplyChainEP.deployed();
-        //     const strings = await Strings.deployed()
+        it("should be able to split subparts using the string library", async() => {
+            const scep = await SupplyChainEP.deployed();
+            const strings = await Strings.deployed()
     
-        //     const sample_part_one = "part1"
-        //     const sample_part_one_subparts = "subpart1 subpart2"
+            const sample_part_one = "part1"
+            const sample_part_one_subparts = "subpart1 subpart2"
     
-        //     await scep.addResource(sample_part_one, sample_part_one_subparts)
+            await scep.addResource(sample_part_one, sample_part_one_subparts)
     
-        //     var eventEmitted1 = false
+            var eventEmitted1 = false
     
-        //     var eventarg1
-        //     var event1 = scep.debugString()
-        //     await event1.watch((err, res) => {
-        //         eventEmitted1 = true
-        //         eventarg1 = res.args.debug
-        //     })
+            var eventarg1
+            var event1 = scep.debugString()
+            await event1.watch((err, res) => {
+                eventEmitted1 = true
+                eventarg1 = res.args.debug
+            })
     
-        //     var eventEmitted2 = false
+            var eventEmitted2 = false
     
-        //     var eventarg2
-        //     var event2 = scep.debugString2()
-        //     await event2.watch((err, res) => {
-        //         eventEmitted2 = true
-        //         eventarg2 = res.args.debug.toString(5)
-        //     })
-    
-    
-        //     var eventEmitted3 = false
-    
-        //     var eventarg3
-        //     var event3 = scep.debugInt()
-        //     await event3.watch((err, res) => {
-        //         eventEmitted3 = true
-        //         eventarg3 = res.args.debug
-        //     })
+            var eventarg2
+            var event2 = scep.debugString2()
+            await event2.watch((err, res) => {
+                eventEmitted2 = true
+                eventarg2 = res.args.debug.toString(5)
+            })
     
     
-        //     await scep.splitSubparts(sample_part_one)
+            var eventEmitted3 = false
     
-        //     assert.equal(eventEmitted1, true, 'the program was not able to emit an event for first debugString')
-        //     assert.equal(eventarg1, "subpart1", 'the program was not able to get the first subpart')
-        //     assert.equal(eventEmitted2, true, 'the program was not able to emit an event for debugString2')
-        //     assert.equal(eventarg2, "subpart2", 'the program was not able to get the second subpart')
-        //     assert.equal(eventEmitted3, true, 'the program was not able to emit an event for debugInt')
-        //     assert.equal(eventarg3, 2, 'the program was not able to get the number of subparts')
-        // })
+            var eventarg3
+            var event3 = scep.debugInt()
+            await event3.watch((err, res) => {
+                eventEmitted3 = true
+                eventarg3 = res.args.debug
+            })
+    
+    
+            await scep.splitSubparts(sample_part_one)
+    
+            assert.equal(eventEmitted1, true, 'the program was not able to emit an event for first debugString')
+            assert.equal(eventarg1, "subpart1", 'the program was not able to get the first subpart')
+            assert.equal(eventEmitted2, true, 'the program was not able to emit an event for debugString2')
+            assert.equal(eventarg2, "subpart2", 'the program was not able to get the second subpart')
+            assert.equal(eventEmitted3, true, 'the program was not able to emit an event for debugInt')
+            assert.equal(eventarg3, 2, 'the program was not able to get the number of subparts')
+        })
     
         it("should be able to add a resource", async() => {
             const scep = await SupplyChainEP.deployed();
@@ -234,12 +234,12 @@ contract('SupplyChainEP', function(accounts) {
             assert.equal(f, 0, 'the program was not able to retrieve the right amount of ethereum for the request')
         })
     
-        it("should not be able to send a direct error request to a subpart manufacturer that whitelisted it", async() => {
+        // it("should not be able to send a direct error request to a subpart manufacturer that whitelisted it", async() => {
     
-        })
+        // })
     
-        it("should be able to send no warnings if the subpart has no subparts of its own", async() => {
+        // it("should be able to send no warnings if the subpart has no subparts of its own", async() => {
     
-        })
+        // })
     })
 })

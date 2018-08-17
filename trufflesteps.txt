@@ -16,7 +16,15 @@ How to begin coding:
 5) Go into metamask and go into the blockchain with the password.
 
 TODO:
-
-Need to verify that part name and subpart name are properly formatted	
-
-Put up some UI when something happens lol
+DONE Display current account
+DONE Reflect updates to contract state
+3) Choose 5 tests
+	- Still need one more test
+4) Circuit breaker
+5) One other design pattern
+6) Common attacks
+7) Documentation
+Changes:
+	- Sanitize Data
+	- Mutex
+	- DoS with block limit (create pull over push payments)

@@ -8,14 +8,13 @@ import './css/pure-min.css'
 import './App.css'
 import ipfs from './ipfs';
 
-// TODO: Do I need to link strings library here too?
-
 class App extends Component {
   constructor(props) {
     super(props)
 
     this.state = {
       parts: "",
+      showNotification: false,
       web3: null,
       contract: null,
       account: null,
@@ -125,18 +124,39 @@ class App extends Component {
         resourceAddedEvent.watch((err, res) => {
           console.log(err);
           console.log(res);
+          if(!err && this.state.showNotification) {
+            alert("You have successfully added a part! Please refresh your browser to indicate changes.")
+            this.setState({showNotification: false});
+          } else if (this.state.showNotification) {
+            alert("Change was not made, please try again.")
+            this.setState({showNotification: false});
+          }
         })
 
         let userWhitelistedEvent = supplyChainEPInstance.userWhitelisted();
         userWhitelistedEvent.watch((err, res) => {
           console.log(err);
           console.log(res);
+          if(!err && this.state.showNotification) {
+            alert("You have successfully whitelisted a user!")
+            this.setState({showNotification: false});
+          } else if (this.state.showNotification) {
+            alert("Change was not made, please try again.")
+            this.setState({showNotification: false});
+          }
         })
 
         let requestSentEvent = supplyChainEPInstance.requestSent();
         requestSentEvent.watch((err, res) => {
           console.log(err);
           console.log(res);
+          if(!err && this.state.showNotification) {
+            alert("You have successfully sent a notification! (And any potential warnings)")
+            this.setState({showNotification: false});
+          } else if (this.state.showNotification) {
+            alert("Change was not made, please try again.")
+            this.setState({showNotification: false});
+          }
         })
 
         let warningSentEvent = supplyChainEPInstance.warningSent();
@@ -173,10 +193,10 @@ class App extends Component {
   handleSubmit(event){
     const contract = this.state.contract
     const account = this.state.account
-    alert('A part was submitted: ' + this.state.newPartString + ' with subparts: ' + this.state.newSubpartString + ' for account: ' + account);
+    // alert('A part was submitted: ' + this.state.newPartString + ' with subparts: ' + this.state.newSubpartString + ' for account: ' + account);
     event.preventDefault();
     document.getElementById('new-part-form').reset()
-
+    this.setState({showNotification: true});
     contract.addResource(this.state.newPartString, this.state.newSubpartString, {from: account})
       .then(result => {
         this.setState({newPartString: ""});
@@ -194,12 +214,13 @@ class App extends Component {
   }
 
   handleNotifySubmit(event){
-    alert("Sending Notification for part: " + this.state.newNotifyPart + "\n with IPFS: " + this.state.newNotifyIPFS + "\n with sending address: "
-      + this.state.account)
+    // alert("Sending Notification for part: " + this.state.newNotifyPart + "\n with IPFS: " + this.state.newNotifyIPFS + "\n with sending address: "
+      // + this.state.account)
     const contract = this.state.contract
     const account = this.state.account
     event.preventDefault();
     document.getElementById('new-notification-form').reset()
+    this.setState({showNotification: true});
     contract.notify(this.state.newNotifyPart, this.state.newNotifyIPFS, {from: account, value: this.state.web3.toWei('1', 'ether')})
       .then(result => {
         this.setState({newNotifyPart: ""});
@@ -219,9 +240,10 @@ class App extends Component {
   handleWhitelistSubmit(event){
     const contract = this.state.contract
     const account = this.state.account
-    alert("Trying to submit user: " + this.state.newWhitelistUser
-     + "\n for part: " + this.state.newWhitelistPart
-     + "\n from user: " + account)
+    // alert("Trying to submit user: " + this.state.newWhitelistUser
+    //  + "\n for part: " + this.state.newWhitelistPart
+    //  + "\n from user: " + account)
+    this.setState({showNotification: true});
     event.preventDefault();
     document.getElementById('new-whitelist-form').reset()
     contract.whitelistUser(this.state.newWhitelistPart, this.state.newWhitelistUser, true, {from: account})
@@ -261,69 +283,65 @@ class App extends Component {
   render() {
 
     return (
-      <div className="App">
-        <nav className="navbar pure-menu pure-menu-horizontal">
-            <a href="#" className="pure-menu-heading pure-menu-link">Truffle Box</a>
-        </nav>
+        <div className="App">
+          <nav className="navbar pure-menu pure-menu-horizontal">
+              <a href="#" className="pure-menu-heading pure-menu-link">Supply Chain Error Propagation App</a>
+          </nav>
 
-        <main className="container">
-          <div className="pure-g">
-            <div className="pure-u-1-1">
-              <h1>Good to Go!</h1>
-              <p>Your Truffle Box is installed and ready.</p>
-              <h2>Smart Contract Example</h2>
-              <p>If your contracts compiled and migrated successfully, below will show a stored value of 5 (by default).</p>
-              <p>Try changing the value stored on <strong>line 59</strong> of App.js.</p>
-              <p> Your parts are: {this.state.parts}</p>
-              <p> The IPFS hash is: {this.state.ipfsHash}</p>
-              <form onSubmit={this.onIPFSSubmit}>
-                <input 
-                  type="file"
-                  onChange={this.captureFile}
-                />
-                <button
-                  type="submit"> 
-                  Send it 
-                </button>
-              </form>
-              <form id="new-part-form" onSubmit={this.handleSubmit}>
-                <label>
-                  New Part Name:
-                  <input type="text" value={this.state.value} onChange={this.handleChangePart} />
-                </label>
-                <label>
-                  New Part Subparts:
-                  <input type="text" value={this.state.value} onChange={this.handleChangeSubpart} />
-                </label>
-                <input type="submit" value="Submit" />
-              </form>
-              <form id="new-whitelist-form" onSubmit={this.handleWhitelistSubmit}>
-                <label>
-                  Part Name for Whitelisting:
-                  <input type="text" value={this.state.value} onChange={this.handleChangeWhitelistPart} />
-                </label>
-                <label>
-                  User to whitelist (please enter address):
-                  <input type="text" value={this.state.value} onChange={this.handleChangeWhitelistUser} />
-                </label>
-                <input type="submit" value="Submit" />
-              </form>
-              <form id="new-notification-form" onSubmit={this.handleNotifySubmit}>
-                <label>
-                  Notify for part name:
-                  <input type="text" value={this.state.value} onChange={this.handleChangeNotifyPart} />
-                </label>
-                <label>
-                  IPFS Address:
-                  <input type="text" value={this.state.value} onChange={this.handleChangeNotifyIPFS} />
-                </label>
-                <input type="submit" value="Submit" />
-              </form>
-              <button onClick={this.handleReceiveNotification}>Receive Notifications</button>
+          <main className="container">
+            <div className="pure-g">
+              <div className="pure-u-1-1">
+                <p> Your account is: {this.state.account}</p>
+                <p> Your parts are: {this.state.parts}</p>
+                <p> The IPFS hash is: {this.state.ipfsHash}</p>
+                <form onSubmit={this.onIPFSSubmit}>
+                  <input 
+                    type="file"
+                    onChange={this.captureFile}
+                  />
+                  <button
+                    type="submit"> 
+                    Send it 
+                  </button>
+                </form>
+                <form id="new-part-form" onSubmit={this.handleSubmit}>
+                  <label>
+                    New Part Name:
+                    <input type="text" value={this.state.value} onChange={this.handleChangePart} />
+                  </label>
+                  <label>
+                    New Part Subparts:
+                    <input type="text" value={this.state.value} onChange={this.handleChangeSubpart} />
+                  </label>
+                  <input type="submit" value="Submit" />
+                </form>
+                <form id="new-whitelist-form" onSubmit={this.handleWhitelistSubmit}>
+                  <label>
+                    Part Name for Whitelisting:
+                    <input type="text" value={this.state.value} onChange={this.handleChangeWhitelistPart} />
+                  </label>
+                  <label>
+                    User to whitelist (please enter address):
+                    <input type="text" value={this.state.value} onChange={this.handleChangeWhitelistUser} />
+                  </label>
+                  <input type="submit" value="Submit" />
+                </form>
+                <form id="new-notification-form" onSubmit={this.handleNotifySubmit}>
+                  <label>
+                    Notify for part name:
+                    <input type="text" value={this.state.value} onChange={this.handleChangeNotifyPart} />
+                  </label>
+                  <label>
+                    IPFS Address:
+                    <input type="text" value={this.state.value} onChange={this.handleChangeNotifyIPFS} />
+                  </label>
+                  <input type="submit" value="Submit" />
+                </form>
+                <button onClick={this.handleReceiveNotification}>Receive Notifications</button>
+              </div>
             </div>
-          </div>
-        </main>
-      </div>
+          </main>
+        </div>
     );
   }
 }
