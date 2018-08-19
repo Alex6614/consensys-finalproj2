@@ -18,9 +18,11 @@ How to begin coding:
 TODO:
 DONE Display current account
 DONE Reflect updates to contract state
+2) Need to show the ipfs
 3) Choose 5 tests
 	- Still need one more test
-4) Circuit breaker
+DONE Circuit breaker
+	- But it's kinda shitty. Website kinda just breaks.
 5) One other design pattern
 6) Common attacks
 7) Documentation

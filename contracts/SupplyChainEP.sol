@@ -60,7 +60,7 @@ contract SupplyChainEP {
     event debugString(string debug);
     event debugString2(string debug);
     event debugInt(uint debug);
-    // event stopped();
+    event stoppedChange(bool status);
 
     event gothere();
     event debugBool(bool boolean);
@@ -70,19 +70,21 @@ contract SupplyChainEP {
     modifier isSource (string part) {require (resourceInfo[part].source == msg.sender); _;}
     modifier isOwner () {require(msg.sender == owner); _;}
     modifier notEmpty (string _string) {bytes memory stringTest = bytes(_string); require (stringTest.length != 0); _;}
-    // modifier stopInEmergency {if (!stopped) _; }
+    modifier stopInEmergency {require(!stopped); _;}
 
     constructor() public {
         owner = msg.sender;
     }
 
-    // function toggleContractActive() isOwner public {
-    //     stopped = !stopped;
-    // }
+    function toggleContractActive() isOwner public {
+        stopped = !stopped;
+        emit stoppedChange(stopped);
+    }
 
     // When notifying people, you also send warnings to one level further down
     function notify(string parts, string _ipfsHash)
         payable
+        stopInEmergency
         public
     {   
         Resource storage r = resourceInfo[parts];
@@ -123,6 +125,7 @@ contract SupplyChainEP {
     // part names should be space separated
     function addResource(string _resourceName, string _partNames)
         public
+        stopInEmergency
         notEmpty(_resourceName)
     {
         // First see if resource is empty
@@ -151,6 +154,7 @@ contract SupplyChainEP {
     // to remove them from the whitelist
     function whitelistUser(string part, address _whitelistedUser, bool state)
         public
+        stopInEmergency
         isSource(part)
     {
         // Save the reference to the mapping inside the resource struct
@@ -178,6 +182,7 @@ contract SupplyChainEP {
     // This would eventually delete all the requests by the end of the transaction
     function getRequests()
         public
+        stopInEmergency
         returns (bool[], address[], uint, string)
     {
         Request[] storage r = requests[msg.sender];
@@ -220,6 +225,14 @@ contract SupplyChainEP {
             ipfs_hash = ipfs_hash.toSlice().concat(",".toSlice());
         }
         return (isWarning, notifiers, payment, ipfs_hash);
+    }
+
+    function checkEmergencyStop()
+        public
+        view
+        returns (bool)
+    {
+        return stopped;
     }
 
     // For Debugging

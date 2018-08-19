@@ -25,7 +25,8 @@ class App extends Component {
       newNotifyPart:"",
       newNotifyIPFS:"",
       ipfsHash:null,
-      buffer:''
+      buffer:'',
+      emergencyStop: false
     }
 
     this.handleChangePart = this.handleChangePart.bind(this);
@@ -39,6 +40,8 @@ class App extends Component {
     this.handleNotifySubmit = this.handleNotifySubmit.bind(this);
     this.handleReceiveNotification = this.handleReceiveNotification.bind(this);
     this.handleUpdateAccount = this.handleUpdateAccount.bind(this);
+    this.handleEmergencyStop = this.handleEmergencyStop.bind(this);
+    this.checkEmergencyStop = this.checkEmergencyStop.bind(this);
   }
 
   captureFile =(event) => {
@@ -128,7 +131,7 @@ class App extends Component {
             alert("You have successfully added a part! Please refresh your browser to indicate changes.")
             this.setState({showNotification: false});
           } else if (this.state.showNotification) {
-            alert("Change was not made, please try again.")
+            alert("Change was not made, please try again.\n Most likely, this is because circuit breaker is on.")
             this.setState({showNotification: false});
           }
         })
@@ -141,7 +144,7 @@ class App extends Component {
             alert("You have successfully whitelisted a user!")
             this.setState({showNotification: false});
           } else if (this.state.showNotification) {
-            alert("Change was not made, please try again.")
+            alert("Change was not made, please try again.\n Most likely, this is because circuit breaker is on.")
             this.setState({showNotification: false});
           }
         })
@@ -154,7 +157,7 @@ class App extends Component {
             alert("You have successfully sent a notification! (And any potential warnings)")
             this.setState({showNotification: false});
           } else if (this.state.showNotification) {
-            alert("Change was not made, please try again.")
+            alert("Change was not made, please try again.\n Most likely, this is because circuit breaker is on.")
             this.setState({showNotification: false});
           }
         })
@@ -163,6 +166,17 @@ class App extends Component {
         warningSentEvent.watch((err, res) => {
           console.log(err);
           console.log(res);
+        })
+
+        let emergencyToggleEvent = supplyChainEPInstance.stoppedChange();
+        emergencyToggleEvent.watch((err, res) => {
+          if(!err && this.state.showNotification) {
+            alert("You have successfully set emergency stop to " + res.args.status)
+            this.setState({showNotification: false});
+          } else if (this.state.showNotification) {
+            alert("Change was not made. Please ensure that you are the admin.")
+            this.setState({showNotification: false});
+          }
         })
 
         this.setState({
@@ -273,11 +287,33 @@ class App extends Component {
           .then(result => {
             console.log(result)
         })
+    }).catch(
+      console.log("ahh")
+    )
+
+  }
+  
+  handleEmergencyStop() {
+    const contract = this.state.contract
+    const account = this.state.account
+    this.setState({showNotification: true});
+    contract.toggleContractActive({from: account, gas: 100000})
+      .then(result => {
+        console.log(result)
+    }).catch(
+      console.log("ehh")
+    )
+  }
+
+  checkEmergencyStop() {
+    const contract = this.state.contract
+    const account = this.state.account
+    contract.checkEmergencyStop
+    .call({from: account, gas: 100000})
+      .then(result => {
+        console.log(result)
     })
-    // contract.getRequests({from: account, gas: 100000})
-    //       .then(result => {
-    //         console.log(result)
-    //     })
+
   }
 
   render() {
@@ -338,6 +374,8 @@ class App extends Component {
                   <input type="submit" value="Submit" />
                 </form>
                 <button onClick={this.handleReceiveNotification}>Receive Notifications</button>
+                <button onClick={this.handleEmergencyStop}>Toggle Emergency Stop</button>
+                <button onClick={this.checkEmergencyStop}>Check Emergency Stop</button>
               </div>
             </div>
           </main>
