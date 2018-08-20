@@ -210,10 +210,18 @@ class App extends Component {
   }
 
   handleSubmit(event){
+    event.preventDefault();
+    if(this.state.newPartString.indexOf(' ') !== -1) {
+      alert("Please do not use whitespaces in the name of the part you are trying to add.")
+      return
+    }
+    if(this.state.newPartString.length > 15) {
+      alert("Please input a part that has 15 or less character")
+      return
+    }
     const contract = this.state.contract
     const account = this.state.account
     // alert('A part was submitted: ' + this.state.newPartString + ' with subparts: ' + this.state.newSubpartString + ' for account: ' + account);
-    event.preventDefault();
     document.getElementById('new-part-form').reset()
     this.setState({showNotification: true});
     contract.addResource(this.state.newPartString, this.state.newSubpartString, {from: account})

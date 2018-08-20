@@ -1,58 +1,45 @@
 pragma solidity ^0.4.23;
-// Use https://github.com/Arachnid/solidity-stringutils for string splitting
-// Note that I technically don't need this.. if I turn Resource.parts into an array
 
-// Change this later to point to downloaded local file
+// Use https://github.com/Arachnid/solidity-stringutils for string splitting
 import "./strings.sol";
 
-
-// TODO: 
-// 0) Create a function that resets EVERYTHING
-//  i) Every update to the contract state should have a corresponding event tied to it
-//  ii) Add openzeppellin split amount integration (do by saving payees in an array first)
-// iii) Add ipfs
-    // iii-a) https://github.com/ipfs/js-ipfs/tree/master/examples, https://github.com/ipfs/js-ipfs/tree/master/examples/ipfs-101 
-// iv) Add check that part (make this a modifier) and subparts (check in-function) exist, for notify
-
-// Stretch Goals
-
-// Split up payments for multiple people if more than one part specified.
-
-
-
-// In progress: Switch whitelist users to whitelist user. Ensure that the tests are also changed
-
+/** @title Supply Chain Error Propagation Contract */
 contract SupplyChainEP {
     using strings for *;
 
+    // Keeps track of status of circuit breaker
     bool private stopped = false;
     
-    /* set owner */
+    // Keeps track of owner
     address owner;
 
-    /* getting information from resource name */
+    // Input string to get information about resource
     mapping (string => Resource) resourceInfo;
 
+    // Struct containing information on resource
     struct Resource {
         address source;
-        string name; // Note that IRL, these could be EPCs
-        string parts; // space separated names of parts
+        string name;
+        string parts; // Space separated components of parts
         mapping (address => bool) whitelistedUsers;
     }
 
+    // Grabs the name of the resources based on address
     mapping (address => string) resources;
 
+    // Provides array of requests that a user has
     mapping (address => Request[]) requests;
 
+    // Struct containing information on request
     struct Request {
-        bool directRequest; // If it's just a warning, then this is false
+        bool directRequest; // Errors are true, warnings are false.
         string resourceName;
         address requester;
         uint reward;
-        string ipfsHash;
+        string ipfsHash;    // Address of IPFS file
     }
 
-    /* Events */
+    // Events
     event requestSent(string resourceName, address _address);
     event warningSent(uint numberOfWarnings);
     event userWhitelisted(string part, address whitelisteduser);
@@ -61,27 +48,36 @@ contract SupplyChainEP {
     event debugString2(string debug);
     event debugInt(uint debug);
     event stoppedChange(bool status);
-
     event gothere();
     event debugBool(bool boolean);
 
-    /* Modifiers */
+    // Modifiers
     modifier verifyCaller (address _address) {require (msg.sender == _address); _;}
     modifier isSource (string part) {require (resourceInfo[part].source == msg.sender); _;}
     modifier isOwner () {require(msg.sender == owner); _;}
     modifier notEmpty (string _string) {bytes memory stringTest = bytes(_string); require (stringTest.length != 0); _;}
     modifier stopInEmergency {require(!stopped); _;}
 
+    /**
+        @dev Initializes the contract
+     */
     constructor() public {
         owner = msg.sender;
     }
 
+    /**
+        @dev Toggles circuit breaker state, if you are admin. Emits "stoppedChange" event.
+     */
     function toggleContractActive() isOwner public {
         stopped = !stopped;
         emit stoppedChange(stopped);
     }
 
-    // When notifying people, you also send warnings to one level further down
+    /**
+        @dev Sends notifications and warnings for a given part, so long as sender is whitelisted for the part. Also pays 1 ether to the owner.
+        @param parts Name of the part whose owner is to be notified
+        @param _ipfsHash Address of the file in IPFS
+     */
     function notify(string parts, string _ipfsHash)
         payable
         stopInEmergency
@@ -91,6 +87,7 @@ contract SupplyChainEP {
         emit gothere();
         emit debugBool(r.whitelistedUsers[msg.sender]);
 
+        // Push error to owner of the part
         if(r.whitelistedUsers[msg.sender]) {
             requests[r.source].push(Request({
                 directRequest: true,
@@ -100,6 +97,7 @@ contract SupplyChainEP {
                 ipfsHash: _ipfsHash
             }));
             emit requestSent(r.name, r.source);
+
             // Push warnings to each of the subparts
             var s = r.parts.toSlice();
             var delim = " ".toSlice();
@@ -112,7 +110,7 @@ contract SupplyChainEP {
                 requests[r2.source].push(Request({
                     directRequest: false,
                     resourceName: r2.name,
-                    requester: r.source, // We give the name of the manufacturer that is one up, so as to protect name of user of part higher up
+                    requester: r.source,
                     reward: 0,
                     ipfsHash: ""
                 }));
@@ -121,8 +119,11 @@ contract SupplyChainEP {
         }
     }
 
-    // Add a resource to the blockchain with your address
-    // part names should be space separated
+    /**
+        @dev Adds a resource to the blockchain under the sender's address
+        @param _resourceName The name of the new resource
+        @param _partNames The name of the new resource's subparts, space separated
+     */
     function addResource(string _resourceName, string _partNames)
         public
         stopInEmergency
@@ -141,6 +142,10 @@ contract SupplyChainEP {
         }
     }
 
+    /**
+        @dev Provides a list of one's own resources
+        @return s A string containing space separated names of resources that the sender owns
+     */
     function myResources()
         public
         view
@@ -149,9 +154,12 @@ contract SupplyChainEP {
         return resources[msg.sender];
     }
     
-    // This is for resource manufacturers to whitelist companies in order to allow them to send
-    // errors. Set state to 'true' if you want to whitelist users, and 'false' if you want
-    // to remove them from the whitelist
+    /**
+        @dev Whitelist another user for a part to allow them to send notifications to you.
+        @param part Name of the part to allow other user to send errors for
+        @param _whitelistedUser Address of other user
+        @param state True to whitelist, false to remove them from the resource's whitelist
+     */
     function whitelistUser(string part, address _whitelistedUser, bool state)
         public
         stopInEmergency
@@ -162,24 +170,13 @@ contract SupplyChainEP {
         emit userWhitelisted(part, _whitelistedUser);
     }
 
-
-    // function whitelistUser(string part, address _whitelistedUsers, bool state)
-    //     public
-    //     isSource(part)
-    // {
-    //     // Save the reference to the mapping inside the resource struct
-    //     mapping (address => bool) map = resourceInfo[part].whitelistedUsers;
-
-    //     // Iterate through the given whitelisted users and save the info in the resource
-    //     for (uint i = 0; i < _whitelistedUsers.length; i++) {
-    //         map[_whitelistedUsers[i]] = state;
-    //     }
-    // }
-
-
-
-    // This is for manufacturers to receive their requests and receive their payments
-    // This would eventually delete all the requests by the end of the transaction
+    /**
+        @dev Return all error notifications and warnings that belongs to the sender. Erases error notifications and warnings for that sender within the blockchain.
+        @return bool[] List of boolean values that corresponds to whether notification at a certain index is an error notification or a warning
+        @return address[] List of addresses that have sent the sender a notification
+        @return uint Amount of ether sent by the requests
+        @return string The ipfs addresses combined into one string, comma separated
+     */
     function getRequests()
         public
         stopInEmergency
@@ -205,28 +202,10 @@ contract SupplyChainEP {
         return (isWarning, notifiers, payment, ipfs_hash);
     }
 
-    function seeRequests()
-        view
-        public
-        returns (bool[], address[], uint, string)
-    {
-        Request[] storage r = requests[msg.sender];
-        bool[] memory isWarning = new bool[](r.length);
-        address[] memory notifiers = new address[](r.length);
-        uint payment = 0;
-
-        string memory ipfs_hash;
-
-        for(uint i = 0; i < r.length; i++) {
-            isWarning[i] = r[i].directRequest;
-            notifiers[i] = r[i].requester;
-            payment = payment + r[i].reward;
-            ipfs_hash = ipfs_hash.toSlice().concat(r[i].ipfsHash.toSlice());
-            ipfs_hash = ipfs_hash.toSlice().concat(",".toSlice());
-        }
-        return (isWarning, notifiers, payment, ipfs_hash);
-    }
-
+    /**
+        @dev Checks the current status of the circuit breaker
+        @return bool True if circuit breaker is on, false otherwise
+     */
     function checkEmergencyStop()
         public
         view
@@ -235,7 +214,11 @@ contract SupplyChainEP {
         return stopped;
     }
 
-    // For Debugging
+    /**
+        @dev Gets the subparts of a given resource
+        @param part The name of the part, whose subparts you are looking for
+        @return string A strng containing space separated names of subparts
+     */
     function getSubparts(string part)
         public
         returns (string)
@@ -243,7 +226,10 @@ contract SupplyChainEP {
         return resourceInfo[part].parts;
     }
 
-    // For Debugging. To be tested on a part that has two subparts
+    /**
+        @dev A debugging function to check if the string library is working correcntly. Grabs the first two subparts of a part
+        @param part The part whose first two subparts are to be checked
+     */
     function splitSubparts(string part)
         public
     {
