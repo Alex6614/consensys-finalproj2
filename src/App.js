@@ -26,7 +26,7 @@ class App extends Component {
       newNotifyIPFS:"",
       ipfsHash:null,
       buffer:'',
-      emergencyStop: false
+      notificationText: ""
     }
 
     this.handleChangePart = this.handleChangePart.bind(this);
@@ -42,6 +42,7 @@ class App extends Component {
     this.handleUpdateAccount = this.handleUpdateAccount.bind(this);
     this.handleEmergencyStop = this.handleEmergencyStop.bind(this);
     this.checkEmergencyStop = this.checkEmergencyStop.bind(this);
+    this.handleNotificationText = this.handleNotificationText.bind(this);
   }
 
   captureFile =(event) => {
@@ -199,7 +200,11 @@ class App extends Component {
       if (newAccount !== currAccount) {
         self.setState({account: newAccount});
         self.setState({ipfsHash: null});
+        self.setState({notificationText: ""});
         console.log("Account updated to: " + newAccount)
+        self.state.contract.myResources.call({from: newAccount}).then((result) => {
+          self.setState({parts: result});
+        })
       }
     }, 100);
   }
@@ -254,9 +259,6 @@ class App extends Component {
   handleWhitelistSubmit(event){
     const contract = this.state.contract
     const account = this.state.account
-    // alert("Trying to submit user: " + this.state.newWhitelistUser
-    //  + "\n for part: " + this.state.newWhitelistPart
-    //  + "\n from user: " + account)
     this.setState({showNotification: true});
     event.preventDefault();
     document.getElementById('new-whitelist-form').reset()
@@ -280,10 +282,11 @@ class App extends Component {
     const account = this.state.account
     event.preventDefault();
     contract.getRequests
-      .call({from: account, gas: 100000})
+      .call({from: account, gas: 500000})
       .then(result => {
         console.log(result)
-        contract.getRequests({from: account, gas: 100000})
+        this.handleNotificationText(result);
+        contract.getRequests({from: account, gas: 500000})
           .then(result => {
             console.log(result)
         })
@@ -311,9 +314,37 @@ class App extends Component {
     contract.checkEmergencyStop
     .call({from: account, gas: 100000})
       .then(result => {
-        console.log(result)
+        if (result) {
+          alert("Emergency stop has been set to true. You will not be able to perform any transactions.")
+        } else {
+          alert("Emergency stop has been set to false. Feel free to use the app!")
+        }
     })
 
+  }
+
+  handleNotificationText(result){
+    var text = "";
+    if(result[0].length === 0) {
+      text = "No new notifications"
+    } else {
+      var ipfsAddresses = result[3].split(",");
+      ipfsAddresses.pop();
+      var ipfsAddressIndex = 0;
+      for(var i = 0; i < result[0].length; i++) {
+        console.log("should be true: " + result[0][i])
+        console.log("should be an address: " + result[1][i])
+        if(result[0][i]) {
+          text += "New error notification from address: " + result[1][i]
+          + " with IPFS: " + ipfsAddresses[ipfsAddressIndex] + "   |   ";
+          ipfsAddressIndex += 1;
+        } else {
+          text += "New warning from address: " + result[1][i] + "   |   ";
+        }
+      }
+    }
+    console.log("text is: " + text);
+    this.setState({notificationText: text});
   }
 
   render() {
@@ -376,6 +407,7 @@ class App extends Component {
                 <button onClick={this.handleReceiveNotification}>Receive Notifications</button>
                 <button onClick={this.handleEmergencyStop}>Toggle Emergency Stop</button>
                 <button onClick={this.checkEmergencyStop}>Check Emergency Stop</button>
+                <p>{this.state.notificationText}</p>
               </div>
             </div>
           </main>

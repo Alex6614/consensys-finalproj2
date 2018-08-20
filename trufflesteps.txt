@@ -18,7 +18,7 @@ How to begin coding:
 TODO:
 DONE Display current account
 DONE Reflect updates to contract state
-2) Need to show the ipfs
+DONE Need to show the ipfs
 3) Choose 5 tests
 	- Still need one more test
 DONE Circuit breaker
