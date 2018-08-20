@@ -135,111 +135,23 @@ contract('SupplyChainEP', function(accounts) {
             assert.equal(whitelistUserpart, dell, 'the program was not able to emit an event for the user to be whitelisted')
 
         })
-    })
-
-    describe('notify-tests', function() {
-        before("setup companies", async function() {
+        it("should be able to toggle the circuit breaker", async() => {
             const scep = await SupplyChainEP.deployed();
             const strings = await Strings.deployed()
     
-            const intelpart1 = "chip"
-            const intelsubparts1 = "silicon copper"
-            const intelpart2 = "screen"
-            const intelsubparts2 = "glass"
+            var circuitBreakerEventEmitted = false
     
-            const siltronicpart1 = "glass"
-            const siltronicpart2 = "silicon"
-    
-            const codelcopart1 = "copper"
-    
-            const emptySubparts = ""
-    
-            await scep.addResource(intelpart1, intelsubparts1, {from: intel})
-            await scep.addResource(intelpart2, intelsubparts2, {from: intel})
-    
-            await scep.addResource(siltronicpart1, emptySubparts, {from: siltronic})
-            await scep.addResource(siltronicpart2, emptySubparts, {from: siltronic})
-    
-            await scep.addResource(codelcopart1, emptySubparts, {from: codelco})
+            var circuitBreakerStatus
+            var circuitBreakerEvent = scep.stoppedChange()
+            await circuitBreakerEvent.watch((err, res) => {
+                circuitBreakerEventEmitted = true
+                circuitBreakerStatus = res.args.status
+            })
 
-            // await scep.whitelistUser(intelpart1, dell, true, {from: intel})
-            // await scep.whitelistUser(intelpart2, dell.address, true, {from: intel})
-            // await scep.whitelistUser(siltronicpart1, intel.address, true, {from: siltronic})
-            // await scep.whitelistUser(siltronicpart2, intel.address, true, {from: siltronic})
-            // await scep.whitelistUser(codelcopart1, intel.address, true, {from: codelco})
+            await scep.toggleContractActive()
+    
+            assert.equal(circuitBreakerEventEmitted, true, 'the program was not able to emit an event for toggling the circuit break')
+            assert.equal(circuitBreakerStatus, true, 'the program was not able to toggle the circuit breaker')
         })
-            
-        it("should be able to send a direct error request and ethereum to a subpart manufacturer that whitelisted it", async() => {
-            const scep = await SupplyChainEP.deployed();
-            const strings = await Strings.deployed()
-            
-            var requestEventEmitted = false
-            var requestEventArgPart
-            var requestEventArgAddress
-            var requestEvent = scep.requestSent()
-            await requestEvent.watch((err, res) => {
-                requestEventEmitted = true
-                requestEventArgPart = res.args.resourceName
-                requestEventArgAddress = res.args._address
-            })
-            
-            var warningEventEmitted = false
-            var warningEventArg
-            var warningEvent = scep.warningSent()
-            await warningEvent.watch((err, res) => {
-                warningEventEmitted = true
-                warningEventArg = res.args.numberOfWarnings
-            })
-
-            // Testing
-            var testEventEmitted = false
-            var testEvent = scep.gothere()
-            await testEvent.watch((err, res) => {
-                testEventEmitted = true
-            })
-
-            var debugBoolEvent = scep.debugBool()
-            var debugBoolEventarg = false;
-            await debugBoolEvent.watch((err, res) => {
-                debugBoolEventarg = res.args.boolean
-            })
-
-            await scep.notify("chip", sampleipfs, {from: dell, value: price})
-            
-            var a,b,c,d,e,f
-            await scep.getRequests({from: intel}).then(function(v) {
-                a = v[0]
-                b = v[1]
-                c = v[2]
-            });
-            await scep.getRequests({from: siltronic}).then(function(w){
-                d = w[0]
-                e = w[1]
-                f = w[2]
-            })
-    
-            // TODO: check Intel's ethereum count
-            assert.equal(debugBoolEventarg, true, 'the program was not able to whitelist me')
-            assert.equal(testEventEmitted, true, 'the program was not able to go to a certain point')
-            assert.equal(requestEventEmitted, true, 'the program was not able to emit an event for sending requests')
-            assert.equal(requestEventArgPart, "chip", 'the program was not able to emit and event with a request with the right part')
-            assert.equal(requestEventArgAddress, intel.address, 'the program was not able to emit and event with a request with the right address')
-            assert.equal(warningEventEmitted, false, 'the program was not able to emit an event for sending warnings')
-            assert.equal(warningEventArg, 2, 'the program was not able to emit an event for the right number of warnings sent')
-            assert.equal(a, [true], 'the program was not able to retrieve the right kind of request')
-            assert.equal(b, [dell.address], 'the program was not able to retrieve the right address for the request')
-            assert.equal(c, price, 'the program was not able to retrieve the right amount of ethereum for the request')
-            assert.equal(d, [false], 'the program was not able to retrieve the right kind of request')
-            assert.equal(e, [intel.address], 'the program was not able to retrieve the right address for the request')
-            assert.equal(f, 0, 'the program was not able to retrieve the right amount of ethereum for the request')
-        })
-    
-        // it("should not be able to send a direct error request to a subpart manufacturer that whitelisted it", async() => {
-    
-        // })
-    
-        // it("should be able to send no warnings if the subpart has no subparts of its own", async() => {
-    
-        // })
     })
 })

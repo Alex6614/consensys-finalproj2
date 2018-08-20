@@ -19,14 +19,26 @@ TODO:
 DONE Display current account
 DONE Reflect updates to contract state
 DONE Need to show the ipfs
-3) Choose 5 tests
+DONE Choose 5 tests
 	- Still need one more test
 DONE Circuit breaker
 	- But it's kinda shitty. Website kinda just breaks.
 5) One other design pattern
 6) Common attacks
-7) Documentation
+DONE Documentation
 Changes:
 	- Sanitize Data
 	- Mutex
 	- DoS with block limit (create pull over push payments)
+
+
+
+README.md
+- What does project do?
+- How to set it up	
+- What are your tests, what they cover, what they do
+
+design_pattern_decisions.md
+- Why you chose to use the design patterns you did
+
+avoiding_common_attacks.md

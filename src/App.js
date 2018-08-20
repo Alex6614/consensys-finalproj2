@@ -368,18 +368,8 @@ class App extends Component {
               <div className="pure-u-1-1">
                 <p> Your account is: {this.state.account}</p>
                 <p> Your parts are: {this.state.parts}</p>
-                <p> The IPFS hash is: {this.state.ipfsHash}</p>
-                <form onSubmit={this.onIPFSSubmit}>
-                  <input 
-                    type="file"
-                    onChange={this.captureFile}
-                  />
-                  <button
-                    type="submit"> 
-                    Send it 
-                  </button>
-                </form>
-                <form id="new-part-form" onSubmit={this.handleSubmit}>
+                <h2> 1. Add a new part here </h2>
+                <form id="new-part-form" className="scep-form" onSubmit={this.handleSubmit}>
                   <label>
                     New Part Name:
                     <input type="text" value={this.state.value} onChange={this.handleChangePart} />
@@ -390,7 +380,8 @@ class App extends Component {
                   </label>
                   <input type="submit" value="Submit" />
                 </form>
-                <form id="new-whitelist-form" onSubmit={this.handleWhitelistSubmit}>
+                <h2> 2. Whitelist another user here </h2>
+                <form id="new-whitelist-form" className="scep-form" onSubmit={this.handleWhitelistSubmit}>
                   <label>
                     Part Name for Whitelisting:
                     <input type="text" value={this.state.value} onChange={this.handleChangeWhitelistPart} />
@@ -401,7 +392,20 @@ class App extends Component {
                   </label>
                   <input type="submit" value="Submit" />
                 </form>
-                <form id="new-notification-form" onSubmit={this.handleNotifySubmit}>
+                <h2> 3. Add a file to IPFS here </h2>
+                <form id="ipfs-hash-form" className="scep-form" onSubmit={this.onIPFSSubmit}>
+                  <input 
+                    type="file"
+                    onChange={this.captureFile}
+                  />
+                  <button
+                    type="submit"> 
+                    Send it 
+                  </button>
+                </form>
+                <p> The IPFS hash is: {this.state.ipfsHash}</p>
+                <h2> 4. Send notifications here </h2>
+                <form id="new-notification-form" className="scep-form" onSubmit={this.handleNotifySubmit}>
                   <label>
                     Notify for part name:
                     <input type="text" value={this.state.value} onChange={this.handleChangeNotifyPart} />
@@ -412,6 +416,7 @@ class App extends Component {
                   </label>
                   <input type="submit" value="Submit" />
                 </form>
+                <h2> 5. Receive Notifications/Circuit Breaker buttons </h2>
                 <button onClick={this.handleReceiveNotification}>Receive Notifications</button>
                 <button onClick={this.handleEmergencyStop}>Toggle Emergency Stop</button>
                 <button onClick={this.checkEmergencyStop}>Check Emergency Stop</button>
